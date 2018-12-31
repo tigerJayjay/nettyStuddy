@@ -38,7 +38,7 @@ public class DiscardServer {
                         //当一个处理器既实现ChannelInboundHandler又实现ChannelOutboundHandler那么按照设置的顺序值按次序处理事件
                         //可以通过handler来decoder或者encoder你自己的协议格式
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(new TimeServerHandler());
+                            socketChannel.pipeline().addLast(new TimeEncoderImprove(),new TimeServerHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG,128)
