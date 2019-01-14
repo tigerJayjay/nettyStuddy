@@ -98,6 +98,7 @@ public class MultiplexerTimeServer implements  Runnable{
                     //将limit设置为当前position,position设置为0
                     readBuffer.flip();
                     byte[] bytes = new byte[readBuffer.remaining()];
+                    readBuffer.get(bytes);
                     String body = new String(bytes, StandardCharsets.UTF_8);
                     System.out.println("The time server receive order: "+body);
                     String currentTime = "QUERY TIME ORDER".equalsIgnoreCase(body)?new java.util.Date(System.currentTimeMillis()).toString():"BAD ORDER";

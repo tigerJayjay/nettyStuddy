@@ -84,7 +84,8 @@ public class TimeClientHandle implements Runnable{
             socketChannel.register(selector, SelectionKey.OP_READ);
             doWrite(socketChannel);
         }else{
-            //还未连接成功，将SocketChannel注册到多路复用器上，注册连接事件
+            //没有连接成功，说明服务端没有返回TCP握手应答消息，不代表连接失败，将SocketChannel注册到多路复用器上，注册连接事件，当服务端返回TCPsyn-ack消息后
+            //Selector就能够轮询到这个SocketChannel处于连接就绪状态
             socketChannel.register(selector,SelectionKey.OP_CONNECT);
         }
     }
@@ -93,6 +94,7 @@ public class TimeClientHandle implements Runnable{
         //检验key
         if(key.isValid()){
            SocketChannel channel =  (SocketChannel)key.channel();
+           //如果为true，说明服务端已经返回ACK应答消息，需要调用SocketChannel的finishConnet()方法对结果进行判断
            if(key.isConnectable()){
                 if(channel.finishConnect()){
                     channel.register(selector,SelectionKey.OP_READ);
