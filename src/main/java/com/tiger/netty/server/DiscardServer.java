@@ -29,7 +29,7 @@ public class DiscardServer {
             //ServerBootstrp是一个帮助类，你也可以通过Channel直接设置服务器信息，但是它是一个非常繁琐的过程
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup,workerGroup)
-                    .channel(NioServerSocketChannel.class)
+                    .channel(NioServerSocketChannel.class)//调用channel()方法通过new ReflectiveChannelFactory(channelClass)实例化channel工厂
                     .childHandler(new ChannelInitializer<SocketChannel>() {
 
                         @Override
@@ -44,7 +44,7 @@ public class DiscardServer {
                     .option(ChannelOption.SO_BACKLOG,128)
                     .childOption(ChannelOption.SO_KEEPALIVE,true);
             //绑定端口，开始接收即将到来的连接
-            ChannelFuture f = b.bind(port).sync();
+            ChannelFuture f = b.bind(port).sync();//->doBind()->initAndRegister()->
 
             //等待服务端socket被关闭
             //在这个例子中，不会发生，但是你可以通过这样做去优雅的关闭你的服务端
