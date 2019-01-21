@@ -8,6 +8,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.string.StringDecoder;
 
 /**
  * 服务端启动类
@@ -38,7 +40,9 @@ public class DiscardServer {
                         //当一个处理器既实现ChannelInboundHandler又实现ChannelOutboundHandler那么按照设置的顺序值按次序处理事件
                         //可以通过handler来decoder或者encoder你自己的协议格式
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(new TimeEncoderImprove(),new TimeServerHandler());
+                            socketChannel.pipeline().addLast(new LineBasedFrameDecoder(1024));
+                            socketChannel.pipeline().addLast(new StringDecoder());
+                            socketChannel.pipeline().addLast(new TcpHalfPackTestHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG,128)
