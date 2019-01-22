@@ -25,5 +25,10 @@
       <artifactId>netty-all</artifactId>
       <version>4.1.32.Final</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>3.6.1</version>
+    </dependency>
   </dependencies>
 </project>

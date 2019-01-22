@@ -1,6 +1,7 @@
 package com.tiger.netty.server;
 
 import com.tiger.netty.object.SubscribeReq;
+import com.tiger.netty.object.SubscribeRes;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -13,5 +14,10 @@ public class NettyObjectDecoderHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         SubscribeReq sr = (SubscribeReq)msg;
         System.out.println(sr.toString()+ ++count);
+        SubscribeRes sRes = new SubscribeRes();
+        sRes.setRespCode(200);
+        sRes.setSubReqID(112);
+        sRes.setDesc("接收成功");
+        ctx.writeAndFlush(sRes);
     }
 }
