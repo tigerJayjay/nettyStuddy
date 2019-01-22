@@ -1,5 +1,6 @@
 package com.tiger.netty.server;
 
+import com.tiger.netty.protofile.SubscribeReqProto;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -9,6 +10,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufDecoder;
+import io.netty.handler.codec.protobuf.ProtobufEncoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
@@ -51,11 +56,23 @@ public class DiscardServer {
                             socketChannel.pipeline().addLast(new TcpHalfPackTestHandler());
                         }*/
                         //通过ObjectDecoder和ObjectEncoder()进行对象序列化和反序列化
-                        @Override
+                       /* @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(new ObjectDecoder(1024*1024, ClassResolvers.weakCachingConcurrentResolver(this.getClass().getClassLoader())));
                             socketChannel.pipeline().addLast(new ObjectEncoder());
                             socketChannel.pipeline().addLast(new NettyObjectDecoderHandler());
+                        }*/
+                        //通过google protoBuf对java对象编解码
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            //ProtoBufVarint32FrameDecoder()用于半包处理 解码
+                            socketChannel.pipeline().addLast(new ProtobufVarint32FrameDecoder());
+                            //参数需要传入需要解码对象
+                            socketChannel.pipeline().addLast(new ProtobufDecoder(SubscribeReqProto.SubscribeReq.getDefaultInstance()));
+                            //编码
+                            socketChannel.pipeline().addLast(new ProtobufVarint32LengthFieldPrepender());
+                            socketChannel.pipeline().addLast(new ProtobufEncoder());
+                            socketChannel.pipeline().addLast(new ProtoBufHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG,128)
