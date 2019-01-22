@@ -9,6 +9,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 
 public class TimeClient {
@@ -26,11 +29,18 @@ public class TimeClient {
             //没有使用childOption()，因为客户端SocketChannel没有parent
             b.option(ChannelOption.SO_KEEPALIVE,true);
             b.handler(new ChannelInitializer<SocketChannel>() {
-                @Override
+               /* @Override
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     socketChannel.pipeline().addLast(new LineBasedFrameDecoder(1024));
                     socketChannel.pipeline().addLast(new StringDecoder());
                     socketChannel.pipeline().addLast(new TcpHalfPackageTestHandler());
+                }*/
+
+                @Override
+                protected void initChannel(SocketChannel socketChannel) throws Exception {
+                    socketChannel.pipeline().addLast(new ObjectDecoder(1024*1024, ClassResolvers.weakCachingConcurrentResolver(this.getClass().getClassLoader())));
+                    socketChannel.pipeline().addLast(new ObjectEncoder());
+                    socketChannel.pipeline().addLast(new NettyObjectDecoderTestHandler());
                 }
             });
             //服务端使用bind()

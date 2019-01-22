@@ -9,6 +9,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 
 /**
@@ -34,15 +37,25 @@ public class DiscardServer {
                     .channel(NioServerSocketChannel.class)//调用channel()方法通过new ReflectiveChannelFactory(channelClass)实例化channel工厂
                     .childHandler(new ChannelInitializer<SocketChannel>() {
 
-                        @Override
+
                         //ChannelPipeline会构建一个Channel的Handler堆栈，包含入站处理器和出站处理器,当一个事件入站会依次通过入站处理的的评估，当一个事件出站会依次通过出战处理器的评估
                         //ChannelPipeline会根据事件出入情景，自动跳过没有实现ChannelOutboundHandler或者ChannelInboundHandler的处理器来缩短栈长
                         //当一个处理器既实现ChannelInboundHandler又实现ChannelOutboundHandler那么按照设置的顺序值按次序处理事件
                         //可以通过handler来decoder或者encoder你自己的协议格式
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        //通过LineBasedFrameDecoder()处理粘包/分包问题
+                      /*
+                      @Override
+                      protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(new LineBasedFrameDecoder(1024));
                             socketChannel.pipeline().addLast(new StringDecoder());
                             socketChannel.pipeline().addLast(new TcpHalfPackTestHandler());
+                        }*/
+                        //通过ObjectDecoder和ObjectEncoder()进行对象序列化和反序列化
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                            socketChannel.pipeline().addLast(new ObjectDecoder(1024*1024, ClassResolvers.weakCachingConcurrentResolver(this.getClass().getClassLoader())));
+                            socketChannel.pipeline().addLast(new ObjectEncoder());
+                            socketChannel.pipeline().addLast(new NettyObjectDecoderHandler());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG,128)
